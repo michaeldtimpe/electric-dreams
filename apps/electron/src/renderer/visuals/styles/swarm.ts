@@ -16,7 +16,7 @@ export const SWARM_MANIFEST: StyleManifest = {
     { key: 'speed', label: 'Speed', min: 0, max: 3, default: 0.8, suggestedFeatures: ['audio.mix.rms'] },
     { key: 'size', label: 'Particle size', min: 0.5, max: 6, default: 1.8, suggestedFeatures: ['audio.bass.rms'] },
     { key: 'burst', label: 'Burst', min: 0, max: 1, default: 0, suggestedFeatures: ['audio.drums.onset'] },
-    { key: 'attract', label: 'Attraction', min: -1, max: 1, default: 0.3, suggestedFeatures: ['audio.vocals.presence'] },
+    { key: 'attract', label: 'Attraction', min: -1, max: 1, default: 0.12, suggestedFeatures: ['audio.vocals.presence'] },
     { key: 'hue', label: 'Hue', min: 0, max: 1, default: 0.5, suggestedFeatures: ['audio.mix.centroid'] },
     { key: 'hueSpan', label: 'Hue span', min: 0, max: 1, default: 0.3 },
     { key: 'turbulence', label: 'Turbulence', min: 0, max: 1, default: 0.5, suggestedFeatures: ['audio.mix.flux'] },

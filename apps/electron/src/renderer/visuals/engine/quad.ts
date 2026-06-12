@@ -29,7 +29,7 @@ export class QuadPass {
   private scene = new THREE.Scene();
   private camera = new THREE.Camera();
 
-  constructor(fragmentShader: string, uniforms: Record<string, THREE.IUniform>, opts?: { blending?: Partial<THREE.RawShaderMaterial> }) {
+  constructor(fragmentShader: string, uniforms: Record<string, THREE.IUniform>, opts?: { blending?: THREE.ShaderMaterialParameters }) {
     this.material = new THREE.RawShaderMaterial({
       glslVersion: THREE.GLSL3,
       vertexShader: VERT,

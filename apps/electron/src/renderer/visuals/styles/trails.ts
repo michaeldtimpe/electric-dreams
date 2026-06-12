@@ -15,10 +15,10 @@ export const TRAILS_MANIFEST: StyleManifest = {
   params: [
     { key: 'zoom', label: 'Zoom', min: -0.5, max: 0.5, default: 0.12, suggestedFeatures: ['audio.bass.rms'] },
     { key: 'rotate', label: 'Rotation', min: -1, max: 1, default: 0.08, suggestedFeatures: ['lfo.slow'] },
-    { key: 'decay', label: 'Persistence', min: 0.7, max: 0.995, default: 0.96 },
+    { key: 'decay', label: 'Persistence', min: 0.7, max: 0.98, default: 0.92 },
     { key: 'hue', label: 'Hue', min: 0, max: 1, default: 0.8, suggestedFeatures: ['audio.mix.centroid'] },
-    { key: 'stamp', label: 'Stamp energy', min: 0, max: 1, default: 0.5, suggestedFeatures: ['audio.drums.onset'] },
-    { key: 'vocal', label: 'Bloom energy', min: 0, max: 1, default: 0.3, suggestedFeatures: ['audio.vocals.presence'] },
+    { key: 'stamp', label: 'Stamp energy', min: 0, max: 1, default: 0.25, suggestedFeatures: ['audio.drums.onset'] },
+    { key: 'vocal', label: 'Bloom energy', min: 0, max: 1, default: 0.15, suggestedFeatures: ['audio.vocals.presence'] },
     { key: 'wobble', label: 'Warp', min: 0, max: 1, default: 0.3 },
   ],
 };
@@ -29,7 +29,7 @@ in vec2 vUv;
 out vec4 outColor;
 uniform vec2 uRes;
 uniform sampler2D uPrev;
-uniform float uTime, uZoom, uRot, uDecay, uHue, uStamp, uVocal, uWobble, uBeatPhase;
+uniform float uTime, uZoom, uRot, uDecay, uHue, uStamp, uVocal, uWobble, uBeatPhase, uInject;
 ${GLSL_COMMON}
 #define PI 3.14159265
 
@@ -46,7 +46,7 @@ void main() {
   vec2 puv = pc;
   puv.x /= uRes.x / uRes.y;
   puv += 0.5;
-  vec3 prev = texture(uPrev, clamp(puv, 0.0, 1.0)).rgb * uDecay;
+  vec3 prev = min(texture(uPrev, clamp(puv, 0.0, 1.0)).rgb, vec3(2.5)) * uDecay;
   // slight hue drift on the feedback keeps colors moving
   prev = mix(prev, prev.gbr, 0.015);
 
@@ -55,18 +55,18 @@ void main() {
   float orbA = uTime * 0.7;
   vec2 stampPos = vec2(cos(orbA), sin(orbA)) * (0.18 + 0.12 * sin(uTime * 0.23));
   float d1 = length(c - stampPos);
-  add += hsv2rgb(vec3(fract(uHue + uTime * 0.01), 0.85, 1.0)) * exp(-d1 * 28.0) * uStamp * 2.2;
+  add += hsv2rgb(vec3(fract(uHue + uTime * 0.01), 0.85, 1.0)) * exp(-d1 * 34.0) * uStamp * 1.2;
   // mirrored twin
   float d2 = length(c + stampPos);
-  add += hsv2rgb(vec3(fract(uHue + 0.33), 0.85, 1.0)) * exp(-d2 * 28.0) * uStamp * 2.2;
+  add += hsv2rgb(vec3(fract(uHue + 0.33), 0.85, 1.0)) * exp(-d2 * 34.0) * uStamp * 1.2;
 
   // vocal bloom: soft center wash
-  add += hsv2rgb(vec3(fract(uHue + 0.55), 0.5, 1.0)) * exp(-length(c) * 5.0) * uVocal * 0.5;
+  add += hsv2rgb(vec3(fract(uHue + 0.55), 0.5, 1.0)) * exp(-length(c) * 6.0) * uVocal * 0.2;
 
   // faint base so standalone never goes black
-  add += hsv2rgb(vec3(fract(uHue + uBeatPhase * 0.1), 0.7, 1.0)) * exp(-length(c - vec2(sin(uTime*0.4)*0.3, cos(uTime*0.31)*0.2)) * 30.0) * 0.12;
+  add += hsv2rgb(vec3(fract(uHue + uBeatPhase * 0.1), 0.7, 1.0)) * exp(-length(c - vec2(sin(uTime*0.4)*0.3, cos(uTime*0.31)*0.2)) * 34.0) * 0.1;
 
-  outColor = vec4(prev + add, 1.0);
+  outColor = vec4(prev + add * uInject, 1.0);
 }
 `;
 
@@ -105,6 +105,7 @@ export class TrailsStyle implements Style {
       uVocal: { value: 0 },
       uWobble: { value: 0.3 },
       uBeatPhase: { value: 0 },
+      uInject: { value: 1 },
     });
     this.copy = new QuadPass(COPY_FRAG, { uTex: { value: null } });
   }
@@ -118,12 +119,14 @@ export class TrailsStyle implements Style {
     this.b = makeRT(w, h);
   }
 
-  update(f: Float32Array, p: Float32Array, _dt: number, time: number): void {
+  update(f: Float32Array, p: Float32Array, dt: number, time: number): void {
     const u = this.feedback.u;
+    const frames = Math.min(dt, 1 / 30) * 60; // frame-rate independence (decay/inject tuned for 60fps)
     u.uTime.value = time;
-    u.uZoom.value = p[P.zoom] * 4;
-    u.uRot.value = p[P.rotate] * 4;
-    u.uDecay.value = p[P.decay];
+    u.uZoom.value = p[P.zoom] * 4 * frames;
+    u.uRot.value = p[P.rotate] * 4 * frames;
+    u.uDecay.value = Math.pow(p[P.decay], frames);
+    u.uInject.value = frames;
     u.uHue.value = p[P.hue];
     u.uStamp.value = p[P.stamp];
     u.uVocal.value = p[P.vocal];

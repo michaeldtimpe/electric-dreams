@@ -66,12 +66,12 @@ void main() {
   float depthShade = clamp(z * 0.22, 0.0, 1.4);
 
   float hue = fract(uHue + z * 0.025 + wall * 0.06);
-  vec3 col = hsv2rgb(vec3(hue, 0.75 - uKick * 0.35, wall * depthShade));
+  vec3 col = hsv2rgb(vec3(hue, 0.75 - uKick * 0.15, wall * depthShade));
   col *= fog * (0.65 + uGlow);
 
   // beat flash: bright ring racing inward
-  float ring = exp(-abs(z - fract(uPhase * 0.5) * 14.0) * 1.2) * uKick;
-  col += hsv2rgb(vec3(fract(hue + 0.08), 0.4, 1.0)) * ring * 1.6;
+  float ring = exp(-abs(z - fract(uPhase * 0.5) * 14.0) * 4.0) * uKick;
+  col += hsv2rgb(vec3(fract(hue + 0.08), 0.5, 1.0)) * ring * 1.1;
 
   // core glow
   col += hsv2rgb(vec3(hue, 0.5, 1.0)) * exp(-r * 3.2) * (0.25 + uGlow * 0.5 + uKick * 0.8);

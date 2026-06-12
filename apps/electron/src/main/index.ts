@@ -187,6 +187,12 @@ function handleClient(msg: ClientMessage): void {
         await deletePreset(msg.id);
         await refreshPresets();
         break;
+      case 'debug/capture': {
+        const img = await visuals.webContents.capturePage();
+        const { writeFile } = await import('node:fs/promises');
+        await writeFile(msg.path, img.toPNG());
+        break;
+      }
       case 'visuals/fullscreen':
         visuals.setFullScreen(!visuals.isFullScreen());
         break;
@@ -292,6 +298,16 @@ app.whenReady().then(async () => {
     visuals.webContents.send(IPC.scene, { scene, rev });
     broadcast({ type: 'scene', scene, rev });
   });
+
+  // dev hook: ED_CAPTURE=/path.png captures the visuals window after 8s
+  if (process.env.ED_CAPTURE) {
+    setTimeout(async () => {
+      const img = await visuals.webContents.capturePage();
+      const { writeFile } = await import('node:fs/promises');
+      await writeFile(process.env.ED_CAPTURE!, img.toPNG());
+      console.log(`[ed] captured visuals to ${process.env.ED_CAPTURE}`);
+    }, 8000);
+  }
 
   // ---- dashboard server
   server = await startServer({ port: PORT, onMessage: handleClient, snapshot });

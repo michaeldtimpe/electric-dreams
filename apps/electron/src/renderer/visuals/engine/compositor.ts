@@ -93,7 +93,7 @@ export class Compositor {
 
     this.ctx = { renderer, width, height, video, videoTexture, spectrumTexture };
 
-    const mk = (mode: number, blending: Partial<THREE.RawShaderMaterial>) =>
+    const mk = (mode: number, blending: THREE.ShaderMaterialParameters) =>
       new QuadPass(
         BLEND_FRAG,
         { uTex: { value: null }, uOpacity: { value: 1 }, uMode: { value: mode } },

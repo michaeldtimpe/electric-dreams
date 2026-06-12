@@ -155,6 +155,17 @@ export class FeatureBus {
     f[F.Walk] = this.walkVal[4];
 
     mix.fillLogSpectrum(this.spectrum);
+    if (fade < 0.99) {
+      // synthetic spectrum so spectrum-driven styles stay alive standalone
+      const t = this.clock;
+      for (let i = 0; i < this.spectrum.length; i++) {
+        const x = i / this.spectrum.length;
+        const bump1 = Math.exp(-Math.pow((x - (0.25 + 0.15 * Math.sin(t * 0.5))) * 7, 2));
+        const bump2 = Math.exp(-Math.pow((x - (0.65 + 0.2 * Math.sin(t * 0.31 + 2))) * 9, 2));
+        const synth = (0.45 * Math.exp(-x * 2.2) + 0.4 * bump1 + 0.35 * bump2) * (0.6 + 0.4 * this.walkVal[4]) * (0.7 + 0.3 * this.synthBeatRamp);
+        this.spectrum[i] = this.spectrum[i] * fade + synth * (1 - fade);
+      }
+    }
     this.port?.postMessage(f);
 
     // throttled meters for the dashboard (~15Hz, frame only — no spectrum)

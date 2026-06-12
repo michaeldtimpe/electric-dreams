@@ -32,7 +32,9 @@ export type ClientMessage =
   | { type: 'video/load' }
   | { type: 'video/clear' }
   | { type: 'visuals/fullscreen' }
-  | { type: 'visuals/blackout'; on: boolean };
+  | { type: 'visuals/blackout'; on: boolean }
+  /** dev tool: capture the visuals window to a PNG on disk */
+  | { type: 'debug/capture'; path: string };
 
 /** ---- main -> dashboard, over WebSocket ---- */
 export interface TransportState {
