@@ -1,6 +1,7 @@
 # Electric Dreams
 
 Music-reactive VJ visuals app. Electron + TypeScript + three.js (WebGL2), web dashboard, Demucs stem separation.
+Public repo: https://github.com/michaeldtimpe/electric-dreams (MIT). Work on branches and push via SSH; `gh` is authenticated.
 
 ## Architecture (read this first)
 
