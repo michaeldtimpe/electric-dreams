@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "isolatedModules": true,
+    "types": ["node"],
+    "paths": { "@ed/shared": ["../../packages/shared/src/index.ts"] }
+  },
+  "include": ["src/main", "src/preload", "electron.vite.config.ts"]
+}

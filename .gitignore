@@ -1,0 +1,7 @@
+node_modules/
+dist/
+out/
+.DS_Store
+python/.venv/
+python/uv.lock
+*.log

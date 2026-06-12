@@ -1,0 +1,20 @@
+{
+  "name": "electric-dreams",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Music-reactive programmatic visuals — VJ-style layered WebGL styles driven by stem-separated audio",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "npm run build -w @ed/dashboard && npm run dev -w @ed/electron",
+    "dev:dashboard": "npm run dev -w @ed/dashboard",
+    "build": "npm run build -w @ed/shared && npm run build -w @ed/dashboard && npm run build -w @ed/electron",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "start": "npm run dev"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

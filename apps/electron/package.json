@@ -1,0 +1,28 @@
+{
+  "name": "@ed/electron",
+  "version": "0.1.0",
+  "private": true,
+  "main": "out/main/index.js",
+  "scripts": {
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "typecheck": "tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json"
+  },
+  "dependencies": {
+    "@ed/shared": "*",
+    "@fastify/static": "^8.0.0",
+    "@fastify/websocket": "^11.0.0",
+    "fastify": "^5.0.0",
+    "three": "^0.177.0",
+    "zod": "^3.24.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/three": "^0.177.0",
+    "@types/ws": "^8.5.0",
+    "electron": "^37.2.0",
+    "electron-vite": "^4.0.0",
+    "typescript": "~5.8.0",
+    "vite": "^7.0.0"
+  }
+}

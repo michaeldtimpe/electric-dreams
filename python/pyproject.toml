@@ -1,0 +1,14 @@
+[project]
+name = "ed-stems"
+version = "0.1.0"
+description = "Electric Dreams Demucs stem-separation sidecar"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "demucs>=4.0.1",
+    "torch>=2.4",
+    "torchaudio>=2.4",
+    "soundfile>=0.12",
+]
+
+[tool.uv]
+package = false

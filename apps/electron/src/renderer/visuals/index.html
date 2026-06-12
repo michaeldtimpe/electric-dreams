@@ -1,0 +1,57 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Electric Dreams</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        background: #000;
+        width: 100%;
+        height: 100%;
+        cursor: default;
+      }
+      canvas {
+        display: block;
+        width: 100vw;
+        height: 100vh;
+      }
+      #dragbar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 28px;
+        z-index: 20;
+        -webkit-app-region: drag;
+        opacity: 0;
+        transition: opacity 0.2s;
+        background: linear-gradient(rgba(255, 255, 255, 0.12), transparent);
+      }
+      #dragbar:hover {
+        opacity: 1;
+      }
+      #drophint {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: rgba(255, 255, 255, 0.25);
+        font: 13px ui-monospace, monospace;
+        pointer-events: none;
+        z-index: 5;
+        opacity: 0;
+        transition: opacity 0.3s;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="dragbar" title="drag to move — F fullscreen, D stats, B blackout"></div>
+    <div id="drophint">drop an audio or video file</div>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>
