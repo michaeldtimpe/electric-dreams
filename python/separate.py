@@ -1,4 +1,4 @@
-"""Demucs stem-separation wrapper.
+"""Demucs stem-separation wrapper (targets demucs 4.0.1, the last PyPI release).
 
 Reads one audio file, writes {drums,bass,vocals,other}.wav into --out.
 Emits newline-delimited JSON progress on stdout:
@@ -19,6 +19,27 @@ def emit(obj):
     print(json.dumps(obj), flush=True)
 
 
+def hook_progress():
+    """demucs.apply uses tqdm when progress=True; subclass it to emit JSON."""
+    try:
+        import demucs.apply as da
+
+        orig = da.tqdm.tqdm
+
+        class JsonTqdm(orig):
+            def update(self, n=1):
+                super().update(n)
+                try:
+                    if self.total:
+                        emit({"type": "progress", "value": round(min(0.99, self.n / self.total), 4)})
+                except Exception:
+                    pass
+
+        da.tqdm.tqdm = JsonTqdm
+    except Exception:
+        pass  # no granular progress, separation still works
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--input", required=True)
@@ -28,8 +49,11 @@ def main():
 
     emit({"type": "status", "message": "Loading model (first run downloads weights)…"})
 
+    import soundfile as sf
     import torch
-    from demucs.api import Separator, save_audio
+    from demucs.pretrained import get_model
+    from demucs.apply import apply_model
+    from demucs.audio import AudioFile
 
     if torch.backends.mps.is_available():
         device = "mps"
@@ -38,39 +62,43 @@ def main():
     else:
         device = "cpu"
 
-    def progress(data):
-        # demucs api callback: segment_offset/audio_length per model in the bag
-        try:
-            total = data.get("audio_length") or 0
-            offset = data.get("segment_offset") or 0
-            models = data.get("models") or 1
-            model_idx = data.get("model_idx_in_bag") or 0
-            if total > 0:
-                frac = (model_idx + min(1.0, offset / total)) / models
-                emit({"type": "progress", "value": round(min(0.99, frac), 4)})
-        except Exception:
-            pass
-
-    def run(dev):
-        sep = Separator(model=args.model, device=dev, callback=progress, callback_arg={})
-        return sep, sep.separate_audio_file(Path(args.input))
+    hook_progress()
 
     try:
+        model = get_model(args.model)
+        model.eval()
+
+        wav = AudioFile(Path(args.input)).read(
+            streams=0, samplerate=model.samplerate, channels=model.audio_channels
+        )
+        ref = wav.mean(0)
+        wav_norm = (wav - ref.mean()) / (ref.std() + 1e-8)
+
+        emit({"type": "status", "message": f"Separating on {device}…"})
+
+        def run(dev):
+            return apply_model(
+                model, wav_norm[None], device=dev, split=True, overlap=0.25, progress=True
+            )[0]
+
         try:
-            sep, (_, stems) = run(device)
+            sources = run(device)
         except Exception:
             if device != "cpu":
                 emit({"type": "status", "message": f"{device} failed, retrying on CPU…"})
-                sep, (_, stems) = run("cpu")
+                sources = run("cpu")
             else:
                 raise
+
+        sources = sources * (ref.std() + 1e-8) + ref.mean()
 
         out_dir = Path(args.out)
         out_dir.mkdir(parents=True, exist_ok=True)
         paths = {}
-        for name, tensor in stems.items():
+        for name, src in zip(model.sources, sources):
             p = out_dir / f"{name}.wav"
-            save_audio(tensor, str(p), samplerate=sep.samplerate)
+            # (channels, time) -> (time, channels); float32 WAV needs no clip handling
+            sf.write(str(p), src.cpu().numpy().T, model.samplerate, subtype="FLOAT")
             paths[name] = str(p.resolve())
         emit({"type": "done", "stems": paths})
     except Exception as e:

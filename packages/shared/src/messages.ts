@@ -34,7 +34,9 @@ export type ClientMessage =
   | { type: 'visuals/fullscreen' }
   | { type: 'visuals/blackout'; on: boolean }
   /** dev tool: capture the visuals window to a PNG on disk */
-  | { type: 'debug/capture'; path: string };
+  | { type: 'debug/capture'; path: string }
+  /** dev tool / power user: load an audio file by absolute path (no dialog) */
+  | { type: 'debug/load'; path: string };
 
 /** ---- main -> dashboard, over WebSocket ---- */
 export interface TransportState {

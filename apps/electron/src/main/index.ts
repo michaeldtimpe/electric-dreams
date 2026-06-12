@@ -187,6 +187,9 @@ function handleClient(msg: ClientMessage): void {
         await deletePreset(msg.id);
         await refreshPresets();
         break;
+      case 'debug/load':
+        await loadAudioFile(msg.path);
+        break;
       case 'debug/capture': {
         const img = await visuals.webContents.capturePage();
         const { writeFile } = await import('node:fs/promises');
