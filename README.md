@@ -8,7 +8,11 @@ Music-reactive programmatic visuals, VJ-style. Visuals run at display refresh in
 
 ## Run it
 
+Requires Node ≥20 and macOS (Windows/Linux untested; the renderer stack is portable but system-audio capture instructions below are macOS-specific).
+
 ```bash
+git clone https://github.com/michaeldtimpe/electric-dreams.git
+cd electric-dreams
 npm install
 npm run dev
 ```
@@ -40,3 +44,9 @@ Live instruments work the same way via **Mic / line-in**.
 ## Workspace layout
 
 `packages/shared` — feature-frame + scene contracts · `apps/electron` — main process, audio engine, visuals renderer · `apps/dashboard` — web UI · `python/` — Demucs sidecar.
+
+## Status
+
+Working: file playback, band + true-stem analysis, BPM beat grid, 7 layerable styles, 5 post filters, live routing matrix, presets, standalone (no-audio) mode, adaptive quality governor. Not yet exercised: live input (mic/BlackHole) beyond the code path; MIDI control is planned (`midi.*` feature IDs reserved).
+
+MIT licensed.
